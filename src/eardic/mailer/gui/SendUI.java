@@ -4,6 +4,7 @@
  */
 package eardic.mailer.gui;
 
+import eardic.mailer.src.AutoMailer;
 import javax.swing.JPasswordField;
 import javax.swing.JProgressBar;
 import javax.swing.JTextField;
@@ -14,7 +15,10 @@ import javax.swing.JTextField;
  */
 public class SendUI extends javax.swing.JDialog
 {
+
     private static final long serialVersionUID = 1L;
+    private String subject, data, tos;
+    private boolean useTemplate = false;
 
     /**
      * Creates new form SendUI
@@ -25,24 +29,18 @@ public class SendUI extends javax.swing.JDialog
         initComponents();
     }
 
-    public JPasswordField getPassword()
+    public void SetMailArgs(String subject, String data, String tos, boolean useTemplate)
     {
-        return password;
+        this.useTemplate = useTemplate;
+        this.subject = subject;
+        this.data = data;
+        this.tos = tos;
     }
-
-    public JTextField getUsername()
+    
+    public void ResetProgress()
     {
-        return username;
-    }
-
-    public JProgressBar getProgress()
-    {
-        return progress;
-    }
-
-    public void setProgress(JProgressBar progress)
-    {
-        this.progress = progress;
+        progress.setValue(0);
+        progress.setString("");
     }
     
     /**
@@ -61,20 +59,22 @@ public class SendUI extends javax.swing.JDialog
         username = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
         password = new javax.swing.JPasswordField();
+        jLabel3 = new javax.swing.JLabel();
+        host = new javax.swing.JTextField();
         sendButton = new javax.swing.JButton();
         progress = new javax.swing.JProgressBar();
 
         jButton1.setText("Send");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("Sender");
+        setResizable(false);
 
         jLabel1.setText("User Name");
 
-        username.setText("jTextField1");
-
         jLabel2.setText("Password");
 
-        password.setText("jPasswordField1");
+        jLabel3.setText("Host");
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -82,13 +82,15 @@ public class SendUI extends javax.swing.JDialog
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(username)
-                    .addComponent(password, javax.swing.GroupLayout.DEFAULT_SIZE, 274, Short.MAX_VALUE))
+                    .addComponent(password)
+                    .addComponent(host))
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
@@ -102,10 +104,25 @@ public class SendUI extends javax.swing.JDialog
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
                     .addComponent(password, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel3)
+                    .addComponent(host, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         sendButton.setText("Send");
+        sendButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                sendButtonActionPerformed(evt);
+            }
+        });
+
+        progress.setForeground(new java.awt.Color(51, 51, 255));
+        progress.setString("");
+        progress.setStringPainted(true);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -118,7 +135,7 @@ public class SendUI extends javax.swing.JDialog
                         .addComponent(sendButton)
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(progress, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(progress, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 386, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -128,14 +145,68 @@ public class SendUI extends javax.swing.JDialog
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(sendButton)
-                .addGap(18, 18, 18)
-                .addComponent(progress, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 18, Short.MAX_VALUE)
+                .addComponent(progress, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void sendButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_sendButtonActionPerformed
+    {//GEN-HEADEREND:event_sendButtonActionPerformed
+
+        try
+        {
+            new Thread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    String[] receivers = tos.split("\n");
+                    int size = receivers.length;
+                    ResetProgress();
+                    progress.setMaximum(size);
+                    progress.setString("Sending...");
+                    
+                    for (int i = 0; i < size; ++i)
+                    {
+                        String per_data = new String(data);
+                        String[] parts = receivers[i].split(",");
+                        String name = parts[0].trim(),
+                                mail = parts[1].trim();
+
+                        if (useTemplate==true)
+                        {                            
+                            per_data = per_data.replace("[NAME]", name);
+                        }
+
+                        boolean isSent = AutoMailer.SendMail(host.getText(), subject, per_data, username.getText(),
+                                new String(password.getPassword()), mail);
+
+                        if (isSent == true)
+                        {
+                            System.out.println("Mail is sent successfully to " + mail);
+                        }
+                        else
+                        {
+                            progress.setString("Failed to send mail to : " + mail);
+                            progress.setValue(0);
+                            return;
+                        }
+
+                        progress.setValue(i + 1);
+                        progress.setString((i + 1) + "/" + size);
+                    }
+                }
+            }).start();
+        }
+        catch (IllegalStateException ex)
+        {
+            ex.printStackTrace();
+        }
+
+    }//GEN-LAST:event_sendButtonActionPerformed
 //    /**
 //     * @param args the command line arguments
 //     */
@@ -194,9 +265,11 @@ public class SendUI extends javax.swing.JDialog
 //        });
 //    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextField host;
     private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPasswordField password;
     private javax.swing.JProgressBar progress;

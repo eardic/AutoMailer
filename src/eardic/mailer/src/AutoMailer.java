@@ -46,10 +46,10 @@ public class AutoMailer
             message.setFrom(new InternetAddress(from));
 
             InternetAddress toAddress = new InternetAddress(to);
-            message.addRecipient(Message.RecipientType.TO, toAddress);
+            message.setRecipient(Message.RecipientType.TO, toAddress);
             message.setSubject(subject);
-            message.setText(data);
-
+            message.setText(data,"utf-8","html");
+            
             Transport transport = session.getTransport("smtp");
             transport.connect(host, from, pass);
             transport.sendMessage(message, message.getAllRecipients());
@@ -59,7 +59,7 @@ public class AutoMailer
         }
         catch (Exception ex)
         {
-            ex.printStackTrace();
+            System.out.println("Fail in SendMail : "+ex.getMessage());            
             return false;
         }
     }

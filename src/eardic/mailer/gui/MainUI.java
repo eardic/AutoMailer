@@ -4,7 +4,10 @@
  */
 package eardic.mailer.gui;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 
 /**
@@ -18,6 +21,7 @@ public class MainUI extends javax.swing.JFrame
     // Send dialog
     private SendUI sendDialog;
     private File toFile;
+    private boolean isUseTemplate=false;
 
     /**
      * Creates new form MainUI
@@ -30,7 +34,7 @@ public class MainUI extends javax.swing.JFrame
 
     private void InitSendUI()
     {
-        sendDialog = new SendUI(this, true);
+        sendDialog = new SendUI(new javax.swing.JFrame(), true);
         sendDialog.addWindowListener(new java.awt.event.WindowAdapter()
         {
             @Override
@@ -40,6 +44,24 @@ public class MainUI extends javax.swing.JFrame
             }
         });
         sendDialog.setVisible(false);
+    }
+
+    private void LoadMails(File mailFile)
+    {
+        try
+        {
+            BufferedReader reader = new BufferedReader(new FileReader(mailFile));
+
+            while (reader.ready())
+            {
+                toArea.append(reader.readLine() + "\n");
+            }
+            //System.out.print(toArea.getText());
+        }
+        catch (Exception ex)
+        {
+            ex.printStackTrace();
+        }
     }
 
     /**
@@ -58,22 +80,29 @@ public class MainUI extends javax.swing.JFrame
         jLabel3 = new javax.swing.JLabel();
         from = new javax.swing.JTextField();
         subject = new javax.swing.JTextField();
-        to = new javax.swing.JTextField();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        toArea = new javax.swing.JTextArea();
         jPanel2 = new javax.swing.JPanel();
         sendMailButton = new javax.swing.JButton();
         loadToButton = new javax.swing.JButton();
-        nameReplaceButton = new javax.swing.JCheckBox();
+        useTemplate = new javax.swing.JCheckBox();
         jPanel3 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         message = new javax.swing.JTextArea();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("AutoMailer by Emre Ardic");
+        setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
 
         jLabel1.setText("From");
 
         jLabel2.setText("Subject");
 
         jLabel3.setText("To");
+
+        toArea.setColumns(20);
+        toArea.setRows(5);
+        jScrollPane2.setViewportView(toArea);
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -87,9 +116,9 @@ public class MainUI extends javax.swing.JFrame
                     .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(from, javax.swing.GroupLayout.DEFAULT_SIZE, 441, Short.MAX_VALUE)
-                    .addComponent(subject, javax.swing.GroupLayout.DEFAULT_SIZE, 441, Short.MAX_VALUE)
-                    .addComponent(to))
+                    .addComponent(from, javax.swing.GroupLayout.DEFAULT_SIZE, 536, Short.MAX_VALUE)
+                    .addComponent(subject, javax.swing.GroupLayout.DEFAULT_SIZE, 536, Short.MAX_VALUE)
+                    .addComponent(jScrollPane2))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -104,10 +133,10 @@ public class MainUI extends javax.swing.JFrame
                     .addComponent(jLabel2)
                     .addComponent(subject, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel3)
-                    .addComponent(to, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(24, Short.MAX_VALUE))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         sendMailButton.setText("Send Mail");
@@ -128,7 +157,14 @@ public class MainUI extends javax.swing.JFrame
             }
         });
 
-        nameReplaceButton.setText("Name Replace");
+        useTemplate.setText("Use Template");
+        useTemplate.addItemListener(new java.awt.event.ItemListener()
+        {
+            public void itemStateChanged(java.awt.event.ItemEvent evt)
+            {
+                useTemplateItemStateChanged(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -138,8 +174,8 @@ public class MainUI extends javax.swing.JFrame
                 .addComponent(sendMailButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(loadToButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 238, Short.MAX_VALUE)
-                .addComponent(nameReplaceButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(useTemplate)
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -147,7 +183,7 @@ public class MainUI extends javax.swing.JFrame
             .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                 .addComponent(sendMailButton)
                 .addComponent(loadToButton)
-                .addComponent(nameReplaceButton))
+                .addComponent(useTemplate))
         );
 
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Message"));
@@ -169,7 +205,7 @@ public class MainUI extends javax.swing.JFrame
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 141, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 146, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -207,15 +243,27 @@ public class MainUI extends javax.swing.JFrame
         if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION)
         {
             toFile = fc.getSelectedFile();
-            System.err.println(toFile.getName());
+            LoadMails(toFile);
+            //System.err.println(toFile.getName());
         }
 
     }//GEN-LAST:event_loadToButtonActionPerformed
-
+      
     private void sendMailButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_sendMailButtonActionPerformed
     {//GEN-HEADEREND:event_sendMailButtonActionPerformed
+        sendDialog.ResetProgress();
+        sendDialog.SetMailArgs(subject.getText(), message.getText(), toArea.getText(),isUseTemplate);
         sendDialog.setVisible(true);
     }//GEN-LAST:event_sendMailButtonActionPerformed
+
+    private void useTemplateItemStateChanged(java.awt.event.ItemEvent evt)//GEN-FIRST:event_useTemplateItemStateChanged
+    {//GEN-HEADEREND:event_useTemplateItemStateChanged
+        isUseTemplate = false;
+        if(useTemplate.isSelected())
+        {
+            isUseTemplate = true;            
+        }        
+    }//GEN-LAST:event_useTemplateItemStateChanged
 
     /**
      * @param args the command line arguments
@@ -275,11 +323,12 @@ public class MainUI extends javax.swing.JFrame
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JButton loadToButton;
     private javax.swing.JTextArea message;
-    private javax.swing.JCheckBox nameReplaceButton;
     private javax.swing.JButton sendMailButton;
     private javax.swing.JTextField subject;
-    private javax.swing.JTextField to;
+    private javax.swing.JTextArea toArea;
+    private javax.swing.JCheckBox useTemplate;
     // End of variables declaration//GEN-END:variables
 }

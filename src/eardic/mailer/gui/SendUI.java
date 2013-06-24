@@ -5,6 +5,7 @@
 package eardic.mailer.gui;
 
 import eardic.mailer.src.AutoMailer;
+import javax.swing.JOptionPane;
 import javax.swing.JPasswordField;
 import javax.swing.JProgressBar;
 import javax.swing.JTextField;
@@ -190,9 +191,7 @@ public class SendUI extends javax.swing.JDialog
                         }
                         else
                         {
-                            progress.setString("Failed to send mail to : " + mail);
-                            progress.setValue(0);
-                            return;
+                            JOptionPane.showMessageDialog(new java.awt.Frame(),"Failed to send mail to : " + mail);
                         }
 
                         progress.setValue(i + 1);

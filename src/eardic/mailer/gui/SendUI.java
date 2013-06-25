@@ -5,10 +5,10 @@
 package eardic.mailer.gui;
 
 import eardic.mailer.src.AutoMailer;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import javax.swing.JOptionPane;
-import javax.swing.JPasswordField;
-import javax.swing.JProgressBar;
-import javax.swing.JTextField;
 
 /**
  *
@@ -20,6 +20,7 @@ public class SendUI extends javax.swing.JDialog
     private static final long serialVersionUID = 1L;
     private String subject, data, tos;
     private boolean useTemplate = false;
+    private FileWriter logFile;
 
     /**
      * Creates new form SendUI
@@ -28,6 +29,11 @@ public class SendUI extends javax.swing.JDialog
     {
         super(parent, modal);
         initComponents();
+        try {
+            logFile = new FileWriter(new File("AutoMailerLogger.txt"));
+        } catch (IOException ex) {
+            System.err.println("Failed to create log file.");
+        }
     }
 
     public void SetMailArgs(String subject, String data, String tos, boolean useTemplate)
@@ -183,30 +189,36 @@ public class SendUI extends javax.swing.JDialog
                         do {
                             boolean isSent = AutoMailer.SendMail(host.getText(), subject, per_data, username.getText(),
                                     new String(password.getPassword()), mail);
-
-                            if (isSent == true) {
-                                System.out.println("Mail is sent successfully to " + mail);
-                            } else {
-                                String[] options = {"Continue", "Retry"};
-                                //JOptionPane.showMessageDialog(new java.awt.Frame(),"Failed to send mail to : " + mail);
-                                int choice = JOptionPane.showOptionDialog(null, //Component parentComponent
-                                        "Failed to send mail to " + mail, //Object message,
-                                        "Send Mail Error", //String title
-                                        JOptionPane.YES_NO_OPTION, //int optionType
-                                        JOptionPane.ERROR_MESSAGE, //int messageType
-                                        null, //Icon icon,
-                                        options, //Object[] options,
-                                        "Continue");//Object initialValue 
-
-                                if (choice == 0) {
-                                    //Continue was chosen
-                                    retry = false;
+                            try {
+                                if (isSent == true) {
+                                    logFile.write("Success : " + mail + "\n");                                 
+                                    logFile.flush();
                                 } else {
-                                    //Retry was chosen
-                                    retry = true;
-                                }
+                                    logFile.write("Fail : " + mail + "\n");
+                                    logFile.flush();
+                                    String[] options = {"Continue", "Retry"};
+                                    int choice = JOptionPane.showOptionDialog(null, //Component parentComponent
+                                            "Failed to send mail to " + mail, //Object message,
+                                            "Send Mail Error", //String title
+                                            JOptionPane.YES_NO_OPTION, //int optionType
+                                            JOptionPane.ERROR_MESSAGE, //int messageType
+                                            null, //Icon icon,
+                                            options, //Object[] options,
+                                            "Continue");//Object initialValue 
 
+                                    if (choice == 0) {
+                                        //Continue was chosen
+                                        retry = false;
+                                    } else {
+                                        //Retry was chosen
+                                        retry = true;
+                                    }
+
+                                }
+                            } catch (IOException ex) {
+                                System.err.println("Failed to write log file");
                             }
+                            
                         } while (retry);
 
                         progress.setValue(i + 1);
@@ -216,66 +228,11 @@ public class SendUI extends javax.swing.JDialog
             }).start();
         } catch (IllegalStateException ex) {
             ex.printStackTrace();
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
 
     }//GEN-LAST:event_sendButtonActionPerformed
-//    /**
-//     * @param args the command line arguments
-//     */
-//    public static void main(String args[])
-//    {
-//        /* Set the Nimbus look and feel */
-//        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-//        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-//         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-//         */
-//        try
-//        {
-//            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels())
-//            {
-//                if ("Nimbus".equals(info.getName()))
-//                {
-//                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-//                    break;
-//                }
-//            }
-//        }
-//        catch (ClassNotFoundException ex)
-//        {
-//            java.util.logging.Logger.getLogger(SendUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-//        }
-//        catch (InstantiationException ex)
-//        {
-//            java.util.logging.Logger.getLogger(SendUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-//        }
-//        catch (IllegalAccessException ex)
-//        {
-//            java.util.logging.Logger.getLogger(SendUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-//        }
-//        catch (javax.swing.UnsupportedLookAndFeelException ex)
-//        {
-//            java.util.logging.Logger.getLogger(SendUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-//        }
-//        //</editor-fold>
-//
-//        /* Create and display the dialog */
-//        java.awt.EventQueue.invokeLater(new Runnable()
-//        {
-//            public void run()
-//            {
-//                SendUI dialog = new SendUI(new javax.swing.JFrame(), true);
-//                dialog.addWindowListener(new java.awt.event.WindowAdapter()
-//                {
-//                    @Override
-//                    public void windowClosing(java.awt.event.WindowEvent e)
-//                    {
-//                        System.exit(0);
-//                    }
-//                });
-//                dialog.setVisible(true);
-//            }
-//        });
-//    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField host;
     private javax.swing.JButton jButton1;

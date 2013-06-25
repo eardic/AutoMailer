@@ -37,13 +37,13 @@ public class SendUI extends javax.swing.JDialog
         this.data = data;
         this.tos = tos;
     }
-    
+
     public void ResetProgress()
     {
         progress.setValue(0);
         progress.setString("");
     }
-    
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -157,8 +157,7 @@ public class SendUI extends javax.swing.JDialog
     private void sendButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_sendButtonActionPerformed
     {//GEN-HEADEREND:event_sendButtonActionPerformed
 
-        try
-        {
+        try {
             new Thread(new Runnable()
             {
                 @Override
@@ -169,39 +168,53 @@ public class SendUI extends javax.swing.JDialog
                     ResetProgress();
                     progress.setMaximum(size);
                     progress.setString("Sending...");
-                    
-                    for (int i = 0; i < size; ++i)
-                    {
+
+                    for (int i = 0; i < size; ++i) {
                         String per_data = new String(data);
                         String[] parts = receivers[i].split(",");
                         String name = parts[0].trim(),
                                 mail = parts[1].trim();
 
-                        if (useTemplate==true)
-                        {                            
+                        if (useTemplate == true) {
                             per_data = per_data.replace("[NAME]", name);
                         }
 
-                        boolean isSent = AutoMailer.SendMail(host.getText(), subject, per_data, username.getText(),
-                                new String(password.getPassword()), mail);
+                        boolean retry = false;
+                        do {
+                            boolean isSent = AutoMailer.SendMail(host.getText(), subject, per_data, username.getText(),
+                                    new String(password.getPassword()), mail);
 
-                        if (isSent == true)
-                        {
-                            System.out.println("Mail is sent successfully to " + mail);
-                        }
-                        else
-                        {
-                            JOptionPane.showMessageDialog(new java.awt.Frame(),"Failed to send mail to : " + mail);
-                        }
+                            if (isSent == true) {
+                                System.out.println("Mail is sent successfully to " + mail);
+                            } else {
+                                String[] options = {"Continue", "Retry"};
+                                //JOptionPane.showMessageDialog(new java.awt.Frame(),"Failed to send mail to : " + mail);
+                                int choice = JOptionPane.showOptionDialog(null, //Component parentComponent
+                                        "Failed to send mail to " + mail, //Object message,
+                                        "Send Mail Error", //String title
+                                        JOptionPane.YES_NO_OPTION, //int optionType
+                                        JOptionPane.ERROR_MESSAGE, //int messageType
+                                        null, //Icon icon,
+                                        options, //Object[] options,
+                                        "Continue");//Object initialValue 
+
+                                if (choice == 0) {
+                                    //Continue was chosen
+                                    retry = false;
+                                } else {
+                                    //Retry was chosen
+                                    retry = true;
+                                }
+
+                            }
+                        } while (retry);
 
                         progress.setValue(i + 1);
                         progress.setString((i + 1) + "/" + size);
                     }
                 }
             }).start();
-        }
-        catch (IllegalStateException ex)
-        {
+        } catch (IllegalStateException ex) {
             ex.printStackTrace();
         }
 
